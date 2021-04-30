@@ -506,7 +506,7 @@ class Ui_Dialog(object):
             mutation_probability=self.mutationValue.value(),
             phase_count=self.phasesValue.value(),
             modules_count=self.modulesValue.value(),
-            genes_conn=self.genesCrossoverRadioButton.isChecked(),
+            genes_cros=self.genesCrossoverRadioButton.isChecked(),
             dataset=self.comboBoxDataset.currentIndex(),
             batch_size=self.batchValue.value(),
             epochs=self.epochsValue.value(),

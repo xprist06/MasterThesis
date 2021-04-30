@@ -8,7 +8,7 @@ from model_engine import modules
 import numpy as np
 import math
 import gc
-
+import logging
 
 
 class ModelUtils:
@@ -112,9 +112,9 @@ class ModelUtils:
             individual.param_count = math.inf
             gc.collect()
             keras.backend.clear_session()
-            print("[INFO] Individual can't fit into memory. Skipping...")
+            logging.info("Individual can't fit into memory. Skipping...")
         except RuntimeError as e:
-            print(e)
+            logging.error(e)
             exit(1)
         finally:
             queue.put((individual.accuracy, individual.error, individual.param_count))

@@ -5,6 +5,7 @@ from tensorflow.keras.datasets import cifar100
 from scipy.io import loadmat
 from sklearn.model_selection import train_test_split
 import numpy as np
+import logging
 
 
 class Dataset:
@@ -39,7 +40,7 @@ class Dataset:
 
     def load_mnist(self):
         # Load the MNIST dataset
-        print("[INFO] loading MNIST dataset...")
+        logging.info("loading MNIST dataset...")
         # Load the data
         (self.train_x, self.train_y), (self.test_x, self.test_y) = mnist.load_data()
 
@@ -58,7 +59,7 @@ class Dataset:
 
     def load_fashion_mnist(self):
         # Load the FASHION MNIST dataset
-        print("[INFO] loading FASHION MNIST dataset...")
+        logging.info("loading FASHION MNIST dataset...")
         # Load the data
         (self.train_x, self.train_y), (self.test_x, self.test_y) = fashion_mnist.load_data()
 
@@ -80,7 +81,7 @@ class Dataset:
 
     def load_svhn(self):
         # Load SVHN dataset
-        print("[INFO] loading SVHN dataset...")
+        logging.info("loading SVHN dataset...")
         # Load the data
         # train_raw = loadmat('C:\\Users\\janp\\Documents\\Skola\\DP\\Python\\src\\input\\svhn\\train.mat')
         # test_raw = loadmat('C:\\Users\\janp\\Documents\\Skola\\DP\\Python\\src\\input\\svhn\\test.mat')
@@ -118,7 +119,7 @@ class Dataset:
 
     def load_cifar10(self):
         # Load the CIFAR-10 dataset
-        print("[INFO] loading CIFAR-10 dataset...")
+        logging.info("loading CIFAR-10 dataset...")
         # Load the data
         (self.train_x, self.train_y), (self.test_x, self.test_y) = cifar10.load_data()
 
@@ -136,7 +137,7 @@ class Dataset:
 
     def load_cifar100(self):
         # Load the CIFAR-100 dataset
-        print("[INFO] loading CIFAR-100 dataset...")
+        logging.info("loading CIFAR-100 dataset...")
         # Load the data
         (self.train_x, self.train_y), (self.test_x, self.test_y) = cifar100.load_data()
 

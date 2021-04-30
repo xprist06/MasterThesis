@@ -10,6 +10,7 @@ import math
 import os
 import imageio
 import gc
+import logging
 
 
 class NSGAIIUtils:
@@ -239,34 +240,29 @@ class NSGAIIUtils:
     #                                                  LOGGER METHODS                                                  #
     ####################################################################################################################
 
-    def log_best_pf(self, output_log, best_pf):
+    def log_best_pf(self, best_pf):
         i = 0
-        output_log += "BEST PARETO FRONT:\n"
-        for individual in best_pf:
-            output_log += str(i) + ": error: " + str(individual.error) + "   param_count: " + str(individual.param_count) + "\n"
-            i += 1
-        output_log += "\n-------------------------------------------------------------------\n\n"
-        return output_log
+        with open(self.directory + "/output.log", "a") as f:
+            f.write("BEST PARETO FRONT:\n")
+            for individual in best_pf:
+                f.write(str(i) + ": error: " + str(individual.error) + "   param_count: " + str(individual.param_count) + "\n")
+                i += 1
+            f.write("\n-------------------------------------------------------------------\n\n")
 
-    def log_population(self, output_log, population):
+    def log_population(self, population):
         i = 0
-        output_log += "POPULATION:\n"
-        for individual in population:
-            output_log += "Individual " + str(i) + ": \n"
-            output_log += "   Accuracy: " + str(individual.accuracy) + "\n"
-            output_log += "   Error: " + str(individual.error) + "\n"
-            output_log += "   Param. count: " + str(individual.param_count) + "\n"
-            output_log += "   Genotype: \n"
-            output_log += "      " + individual.genotype_to_str() + "\n\n"
-            i += 1
-        output_log += "-------------------------------------------------------------------\n"
-        output_log += "-------------------------------------------------------------------\n\n"
-        return output_log
-
-    def save_output_log(self, output_log):
-        f = open(NSGAIIUtils.directory + "/output_log.txt", "w")
-        f.write(output_log)
-        f.close()
+        with open(self.directory + "/output.log", "a") as f:
+            f.write("POPULATION:\n")
+            for individual in population:
+                f.write("Individual " + str(i) + ": \n")
+                f.write("   Accuracy: " + str(individual.accuracy) + "\n")
+                f.write("   Error: " + str(individual.error) + "\n")
+                f.write("   Param. count: " + str(individual.param_count) + "\n")
+                f.write("   Genotype: \n")
+                f.write("      " + individual.genotype_to_str() + "\n\n")
+                i += 1
+            f.write("-------------------------------------------------------------------\n")
+            f.write("-------------------------------------------------------------------\n\n")
 
     ####################################################################################################################
     #                                                  PARETO METHODS                                                  #
@@ -290,9 +286,12 @@ class NSGAIIUtils:
 
     def print_best_pf(self, best_pf):
         i = 0
+        output = ""
         for individual in best_pf:
-            print(str(i) + ": error: " + str(individual.error) + "\tparam_count: " + str(individual.param_count))
+            # print(str(i) + ": error: " + str(individual.error) + "\tparam_count: " + str(individual.param_count))
+            output += str(i) + ": error: " + str(individual.error) + "\tparam_count: " + str(individual.param_count) + "\n"
             i += 1
+        return output
 
     def make_pf_graph(self, population, best_pf, idx=None):
         scores = np.empty((0, 2), float)
@@ -316,13 +315,21 @@ class NSGAIIUtils:
         plt.xlabel('Parameters count')
         plt.ylabel('Validation error (%)')
         if idx is None:
-            plt.savefig(NSGAIIUtils.directory + "/pareto_graph.pdf")
+            directory = NSGAIIUtils.directory + "/result"
+            os.mkdir(directory)
+            plt.savefig(directory + "/pareto_graph.pdf")
         elif idx.startswith("exp_"):
             plt.title("Exploitation " + idx[4:])
             plt.savefig(NSGAIIUtils.directory + "/tmp_pareto" + "/exp_" + idx[4:] + ".png")
+            directory = NSGAIIUtils.directory + "/exp_" + idx[4:]
+            os.mkdir(directory)
+            plt.savefig(directory + "/pareto_graph.pdf")
         elif idx != "val":
             plt.title("Generation " + idx)
             plt.savefig(NSGAIIUtils.directory + "/tmp_pareto" + "/gen_" + idx + ".png")
+            directory = NSGAIIUtils.directory + "/gen_" + idx
+            os.mkdir(directory)
+            plt.savefig(directory + "/pareto_graph.pdf")
         else:
             plt.title("After validation")
             plt.savefig(NSGAIIUtils.directory + "/tmp_pareto" + "/val.png")
@@ -335,25 +342,42 @@ class NSGAIIUtils:
         for file in files:
             if file.endswith(".png"):
                 images.append(imageio.imread(path + "/" + file))
-        imageio.mimsave(NSGAIIUtils.directory + "/pareto_evolution.gif", images, fps=1)
+        imageio.mimsave(NSGAIIUtils.directory + "/result" + "/pareto_evolution.gif", images, fps=1)
         self.rm_pareto_dir()
 
-    def save_best_pf(self, population, best_pf, result_export):
-        if result_export.pareto_graph:
-            self.make_pf_gif()
-            self.make_pf_graph(population, best_pf)
-        if result_export.export_individual:
-            i = 0
-            for individual in best_pf:
-                individual_directory = NSGAIIUtils.directory + "/individual_" + str(i)
-                os.mkdir(individual_directory)
-                self.write_ind_to_file(
-                    individual,
-                    individual_directory,
-                    i,
-                    result_export
-                )
-                i += 1
+    def save_best_pf(self, population, best_pf, result_export=None, idx=None):
+        if result_export is not None:
+            if result_export.pareto_graph:
+                self.make_pf_graph(population, best_pf, idx)
+                if idx is None:
+                    self.make_pf_gif()
+            if result_export.export_individual:
+                i = 0
+
+                if idx is None:
+                    directory = NSGAIIUtils.directory + "/result"
+                elif idx.startswith("exp_"):
+                    directory = NSGAIIUtils.directory + "/exp_" + idx[4:]
+                else:
+                    directory = NSGAIIUtils.directory + "/gen_" + idx
+                if not os.path.isdir(directory):
+                    os.mkdir(directory)
+
+                for individual in best_pf:
+                    if idx is None:
+                        individual_directory = directory + "/individual_" + str(i)
+                    elif idx.startswith("exp_"):
+                        individual_directory = directory + "/individual_" + str(i)
+                    else:
+                        individual_directory = directory + "/individual_" + str(i)
+                    os.mkdir(individual_directory)
+                    self.write_ind_to_file(
+                        individual,
+                        individual_directory,
+                        i,
+                        result_export
+                    )
+                    i += 1
 
     ####################################################################################################################
     #                                                INDIVIDUAL METHODS                                                #

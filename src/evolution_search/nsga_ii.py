@@ -137,7 +137,7 @@ class NSGAII:
             self.utils.mk_pareto_dir()
         self.exploration()
         self.exploitation()
-        # self.train_best_pf()
+        self.train_best_pf()
         self.set_best_pf()
 
         best_pf_output = "Best pareto front:\n"
@@ -154,14 +154,14 @@ class NSGAII:
     def exploration(self):
         logging.info("Starting exploration phase...")
         self.initialize_population()
-        # self.evaluate_population(self.population)
+        self.evaluate_population(self.population)
         self.utils.fast_nondominated_sort(self.population)
         for pareto_front in self.population.pareto_fronts:
             self.utils.compute_crowding_distance(pareto_front)
         self.population.compute_fitness()
         for i in range(self.max_gen):
             offsprings = self.create_offspring_population()
-            # self.evaluate_population(offsprings)
+            self.evaluate_population(offsprings)
             self.population.extend(offsprings.individuals)
             self.set_best_pf()
             self.population = self.create_new_population()
@@ -191,7 +191,7 @@ class NSGAII:
             exp_gen = 2
         for i in range(exp_gen):
             offsprings = self.create_exploitation_offsprings()
-            # self.evaluate_population(offsprings)
+            self.evaluate_population(offsprings)
             self.population.extend(offsprings.individuals)
             self.set_best_pf()
             self.population = self.create_new_population()

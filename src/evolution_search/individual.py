@@ -8,10 +8,10 @@ class Individual:
         self.phases = []
         self.fitness = None
         self.accuracy = None
-        # self.error = None
-        # self.param_count = None
-        self.error = random.uniform(1, 10)
-        self.param_count = random.randint(150000, 1000000)
+        self.error = None
+        self.param_count = None
+        # self.error = random.uniform(1, 10)
+        # self.param_count = random.randint(150000, 1000000)
         self.history = None
         self.genotype = genotype
         self.domination_count = 0

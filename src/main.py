@@ -47,7 +47,7 @@ def main(argv):
     batch_size = 128
     epochs = 10
     val_batch_size = 64
-    val_epochs = 40
+    val_epochs = 50
     val_split = 0.2
     verbose = 1
 

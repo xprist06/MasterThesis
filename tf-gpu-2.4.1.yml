@@ -1,4 +1,4 @@
-name: tf-gpu-2.4.1
+name: tf-gpu-2.4.1-pristas
 channels:
   - anaconda
   - defaults
@@ -136,5 +136,4 @@ dependencies:
   - zipp=3.4.1=pyhd3eb1b0_0
   - zlib=1.2.11=h7b6447c_3
   - zstd=1.4.9=haebb681_0
-prefix: /home/xprist06/.conda/envs/tf-gpu-2.4.1
 

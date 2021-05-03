@@ -7,11 +7,11 @@ import logging
 
 
 def main(argv):
-    pop = None
-    gen = None
-    mut = None
-    phs = None
-    mdls = None
+    population = 10
+    generations = 20
+    mutation = 0.15
+    phases_cnt = 2
+    modules_cnt = 6
 
     logging.basicConfig(level=logging.INFO)
 
@@ -26,35 +26,35 @@ def main(argv):
             logging.info("main.py -p <population (int)> -g <generations (int)> -m <mutation (float)[0:1]> --phases <phases_count (int)[1:10]> --modules <modules_count (int)[1:10]>")
             sys.exit()
         elif opt in ("-p", "--pop"):
-            pop = int(arg)
+            population = int(arg)
         elif opt in ("-g", "--gen"):
-            gen = int(arg)
+            generations = int(arg)
         elif opt in ("-m", "--mut"):
-            mut = float(arg)
+            mutation = float(arg)
         elif opt == "--phases":
-            phs = int(arg)
+            phases_cnt = int(arg)
         elif opt == "--modules":
-            mdls = int(arg)
+            modules_cnt = int(arg)
 
-    pop_size = pop
-    generations = gen
+    pop_size = population
+    generations = generations
     tournament_count = 0  # If == 0, Roulette is used
-    mutation_probability = mut
-    phases = phs
-    modules = mdls
+    mutation_probability = mutation
+    phases = phases_cnt
+    modules = modules_cnt
     genes_cros = True  # Genes crossover
     dataset = 3  # 0 - MNIST, 1 - FASHION MNIST, 2 - SVHN, 3 - CIFAR10, 4 - CIFAR100
     batch_size = 128
-    epochs = 15
+    epochs = 10
     val_batch_size = 64
-    val_epochs = 100
+    val_epochs = 40
     val_split = 0.2
     verbose = 1
 
     result_export = ResultExport(
         pareto_graph=True,
         keras_graph=True,
-        keras_model=False,
+        keras_model=True,
         genotype_info=True
     )
 
@@ -78,4 +78,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+    main(sys.argv[1:])

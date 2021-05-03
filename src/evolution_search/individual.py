@@ -4,7 +4,11 @@ import random
 
 
 class Individual:
+    id = 0
+
     def __init__(self, genotype):
+        self.id = Individual.id
+        Individual.id += 1
         self.phases = []
         self.fitness = None
         self.accuracy = None
@@ -12,12 +16,12 @@ class Individual:
         self.param_count = None
         # self.error = random.uniform(1, 10)
         # self.param_count = random.randint(150000, 1000000)
-        self.history = None
         self.genotype = genotype
         self.domination_count = 0
         self.dominated_individuals = []
         self.rank = 0
         self.crowding_distance = 0
+        self.training_time = None
 
         for phase in self.genotype:
             self.phases.append(Phase(phase))
@@ -27,6 +31,10 @@ class Individual:
         output += "Accuracy: " + str(self.accuracy) + "\n"
         output += "Error: " + str(self.error) + "\n"
         output += "Parameters count: " + str(self.param_count) + "\n"
+        if self.training_time is not None:
+            hours, rem = divmod(self.training_time, 3600)
+            minutes, seconds = divmod(rem, 60)
+            output += "Training time: {:0>2}:{:0>2}:{:05.2f}\n".format(int(hours), int(minutes), seconds)
         output += "Genotype:\n"
         output += self.genotype_to_str()
         return output

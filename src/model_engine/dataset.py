@@ -101,8 +101,6 @@ class Dataset:
         # Scale the data to the range [0, 1]
         self.train_x = self.train_x.astype('float32') / 255.0
         self.test_x = self.test_x.astype('float32') / 255.0
-        # self.train_y = self.train_y.astype('int64')
-        # self.test_y = self.test_y.astype('int64')
 
         # Set labels to the range [0, 9]
         for i in range(len(self.train_y)):

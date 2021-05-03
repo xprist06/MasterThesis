@@ -1,6 +1,8 @@
 from evolution_search.individual import Individual
 from model_engine.model_utils import ModelUtils
 import numpy as np
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import tensorflow.keras as keras
@@ -10,7 +12,6 @@ import math
 import os
 import imageio
 import gc
-import logging
 
 
 class NSGAIIUtils:
@@ -254,7 +255,7 @@ class NSGAIIUtils:
         with open(self.directory + "/output.log", "a") as f:
             f.write("POPULATION:\n")
             for individual in population:
-                f.write("Individual " + str(i) + ": \n")
+                f.write("Individual " + str(individual.id) + ": \n")
                 f.write("   Accuracy: " + str(individual.accuracy) + "\n")
                 f.write("   Error: " + str(individual.error) + "\n")
                 f.write("   Param. count: " + str(individual.param_count) + "\n")
@@ -351,11 +352,11 @@ class NSGAIIUtils:
                 self.make_pf_graph(population, best_pf, idx)
                 if idx is None:
                     self.make_pf_gif()
-            if result_export.export_individual:
-                i = 0
-
+            if result_export.export_individual():
+                res = False
                 if idx is None:
                     directory = NSGAIIUtils.directory + "/result"
+                    res = True
                 elif idx.startswith("exp_"):
                     directory = NSGAIIUtils.directory + "/exp_" + idx[4:]
                 else:
@@ -365,25 +366,24 @@ class NSGAIIUtils:
 
                 for individual in best_pf:
                     if idx is None:
-                        individual_directory = directory + "/individual_" + str(i)
+                        individual_directory = directory + "/individual_" + str(individual.id)
                     elif idx.startswith("exp_"):
-                        individual_directory = directory + "/individual_" + str(i)
+                        individual_directory = directory + "/individual_" + str(individual.id)
                     else:
-                        individual_directory = directory + "/individual_" + str(i)
+                        individual_directory = directory + "/individual_" + str(individual.id)
                     os.mkdir(individual_directory)
                     self.write_ind_to_file(
                         individual,
                         individual_directory,
-                        i,
-                        result_export
+                        result_export,
+                        res=res
                     )
-                    i += 1
 
     ####################################################################################################################
     #                                                INDIVIDUAL METHODS                                                #
     ####################################################################################################################
 
-    def make_graph(self, individual, idx):
+    def make_graph(self, individual):
         conv_color = "orangered"
         node_color = "lightblue"
         input_color = "white"
@@ -408,7 +408,7 @@ class NSGAIIUtils:
 
         graph = Digraph(format="pdf", filename="graph", node_attr=node_attr, graph_attr=graph_attr)
         graph.attr(rankdir="LR")
-        graph.attr(label="Individual_" + str(idx) + "\n\n")
+        graph.attr(label="Individual_" + str(individual.id) + "\n\n")
         graph.attr(labelloc='t')
 
         graph.node("input", "Input", fillcolor=input_color)
@@ -537,23 +537,27 @@ class NSGAIIUtils:
 
         return graph_structure
 
-    def write_ind_to_file(self, individual, directory, idx, result_export):
-        if result_export.export_keras:
-            try:
-                model = ModelUtils.create_model(individual)
-                if result_export.keras_graph:
-                    keras.utils.plot_model(model, to_file=directory + "/cnn_structure.png", show_shapes=True)
-                if result_export.keras_model:
-                    model.save(directory + "/keras_model")
-                del model
-            except tf.errors.ResourceExhaustedError as e:
-                print("[INFO] Individual " + str(idx) + "'s model can't fit into memory. Skipping...")
-            finally:
-                gc.collect()
+    def write_ind_to_file(self, individual, directory, result_export, res=False):
+        if res:
+            if result_export.export_keras():
+                try:
+                    model = ModelUtils.create_model(individual)
+                    if result_export.keras_graph:
+                        keras.utils.plot_model(model, to_file=directory + "/cnn_structure.png", show_shapes=True)
+                    if result_export.keras_model:
+                        # model.save(directory + "/keras_model")
+                        model_json = model.to_json()
+                        with open(directory + "/model.json", "w") as f:
+                            f.write(model_json)
+                        del model_json
+                    del model
+                except tf.errors.ResourceExhaustedError as e:
+                    print("[INFO] Individual " + str(individual.id) + "'s model can't fit into memory. Skipping...")
+                finally:
+                    gc.collect()
 
         if result_export.genotype_info:
-            graph = self.make_graph(individual, idx)
+            graph = self.make_graph(individual)
             graph.render("genotype_graph", directory)
-            f = open(directory + "/genotype.txt", "w")
-            f.write(individual.__str__())
-            f.close()
+            with open(directory + "/genotype.txt", "w") as f:
+                f.write(individual.__str__())

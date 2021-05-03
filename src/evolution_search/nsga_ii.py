@@ -38,6 +38,7 @@ class NSGAII:
             datagen=None,
             result_export=None
     ):
+        logging.basicConfig(level=logging.INFO)
         self.pop_size = pop_size
         self.max_gen = max_gen
 
@@ -81,8 +82,8 @@ class NSGAII:
         NSGAIIUtils.phase_skip_idx = self.modules_count + 1
 
         dir_uid = uuid.uuid4()
-        self.directory = "./" + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(dir_uid)
-        os.mkdir(self.directory)
+        self.directory = "./res/" + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(dir_uid)
+        os.makedirs(self.directory)
 
         NSGAIIUtils.directory = self.directory
         self.utils = NSGAIIUtils()
@@ -170,7 +171,7 @@ class NSGAII:
             best_pf_output += self.utils.print_best_pf(self.best_pf)
             logging.info(best_pf_output)
 
-            if self.result_export.export:
+            if self.result_export.export():
                 self.utils.save_best_pf(self.population, self.best_pf, self.result_export, str(i + 1))
 
             with open(self.directory + "/output.log", "a") as f:
@@ -200,7 +201,7 @@ class NSGAII:
             best_pf_output += self.utils.print_best_pf(self.best_pf)
             logging.info(best_pf_output)
 
-            if self.result_export.export:
+            if self.result_export.export():
                 self.utils.save_best_pf(self.population, self.best_pf, self.result_export, "exp_" + str(i + 1))
 
             with open(self.directory + "/output.log", "a") as f:
@@ -217,11 +218,12 @@ class NSGAII:
             queue = manager.Queue()
             p = mp.Process(target=ModelUtils.evaluate, args=(queue, individual))
             p.start()
-            acc, error, params = queue.get()
+            acc, error, params, tr_time = queue.get()
             p.join()
             individual.accuracy = acc
             individual.error = error
             individual.param_count = params
+            individual.training_time = tr_time
 
     def train_best_pf(self):
         ModelUtils.batch_size = self.val_batch_size
@@ -233,11 +235,12 @@ class NSGAII:
             queue = manager.Queue()
             p = mp.Process(target=ModelUtils.evaluate, args=(queue, individual, True))
             p.start()
-            acc, error, params = queue.get()
+            acc, error, params, tr_time = queue.get()
             p.join()
             individual.accuracy = acc
             individual.error = error
             individual.param_count = params
+            individual.training_time = tr_time
 
     def set_best_pf(self):
         self.utils.fast_nondominated_sort(self.population)
@@ -414,7 +417,7 @@ class NSGAII:
                 f.write("   Samplewise std. norm.: ")
                 f.write(str(self.datagen.samplewise_std_normalization) + "\n")
 
-            if not self.result_export.export:
+            if not self.result_export.export():
                 f.write("Export: None\n")
             else:
                 f.write("Export: \n")
@@ -435,7 +438,7 @@ class NSGAII:
 
     def save_result(self):
         logging.info("Saving result...")
-        if self.result_export.export:
+        if self.result_export.export():
             self.utils.save_best_pf(
                 self.population,
                 self.best_pf,

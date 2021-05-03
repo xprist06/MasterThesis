@@ -8,7 +8,6 @@ from model_engine import modules
 import numpy as np
 import math
 import gc
-import logging
 
 
 class ModelUtils:
@@ -52,7 +51,10 @@ class ModelUtils:
     def evaluate(queue, individual, validation=False):
         import tensorflow as tf
         import tensorflow.keras as keras
+        import logging
+        import time
         try:
+            logging.getLogger('tensorflow').setLevel(logging.ERROR)
             sess = tf.compat.v1.Session(config=ModelUtils.config)
             tf.compat.v1.keras.backend.set_session(sess)
 
@@ -68,6 +70,8 @@ class ModelUtils:
             model.compile(optimizer=optimizer,
                           loss=keras.losses.SparseCategoricalCrossentropy(),
                           metrics=['accuracy'])
+
+            start = time.time()
 
             if ModelUtils.datagen is None:
                 history = model.fit(
@@ -96,11 +100,14 @@ class ModelUtils:
                     verbose=ModelUtils.verbose
                 )
 
+            end = time.time()
+
             score = model.evaluate(ModelUtils.test_x, ModelUtils.test_y, verbose=0)
 
             individual.accuracy = score[1] * 100
             individual.error = (1 - score[1]) * 100
             individual.param_count = np.sum([keras.backend.count_params(w) for w in model.trainable_weights])
+            individual.training_time = end-start
             del model
             gc.collect()
             keras.backend.clear_session()
@@ -110,6 +117,7 @@ class ModelUtils:
             individual.accuracy = 0
             individual.error = 100
             individual.param_count = math.inf
+            individual.training_time = None
             gc.collect()
             keras.backend.clear_session()
             logging.info("Individual can't fit into memory. Skipping...")
@@ -117,4 +125,4 @@ class ModelUtils:
             logging.error(e)
             exit(1)
         finally:
-            queue.put((individual.accuracy, individual.error, individual.param_count))
+            queue.put((individual.accuracy, individual.error, individual.param_count, individual.training_time))

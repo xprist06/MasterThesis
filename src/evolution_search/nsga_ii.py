@@ -81,8 +81,8 @@ class NSGAII:
         NSGAIIUtils.phase_skip_idx = self.modules_count + 1
 
         dir_uid = uuid.uuid4()
-        self.directory = "./" + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(dir_uid)
-        os.mkdir(self.directory)
+        self.directory = "./res/" + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(dir_uid)
+        os.makedirs(self.directory)
 
         NSGAIIUtils.directory = self.directory
         self.utils = NSGAIIUtils()

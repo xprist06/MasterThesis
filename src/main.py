@@ -7,8 +7,8 @@ import logging
 
 
 def main(argv):
-    population = 10
-    generations = 20
+    population = 15
+    generations = 15
     mutation = 0.15
     phases_cnt = 2
     modules_cnt = 6
@@ -49,7 +49,7 @@ def main(argv):
     val_batch_size = 64
     val_epochs = 50
     val_split = 0.2
-    verbose = 1
+    verbose = 2
 
     result_export = ResultExport(
         pareto_graph=True,

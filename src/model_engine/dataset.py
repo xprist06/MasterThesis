@@ -101,6 +101,10 @@ class Dataset:
     def load_svhn(self):
         """
         Load SVHN dataset
+        Can be downloaded from
+        - ufldl.stanford.edu/housenumbers/train_32x32.mat
+        - ufldl.stanford.edu/housenumbers/test_32x32.mat
+        and save into ./input directory
         """
         logging.info("loading SVHN dataset...")
 

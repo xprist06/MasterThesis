@@ -50,10 +50,13 @@ def arg_error(msg):
 
 
 def main(argv):
+<<<<<<< HEAD
     """
     Process input arguments from command line, set evolution params and start computation
     :param argv: command line arguments
     """
+=======
+>>>>>>> 6a8aab38c51e9e96d6390615ff19334f33770de7
     population = 15
     generations = 15
     mutation = 0.15
@@ -102,6 +105,7 @@ def main(argv):
             except ValueError:
                 arg_error("Phases count value has to be an integer. Value given: " + arg)
         elif opt == "--modules":
+<<<<<<< HEAD
             try:
                 modules_cnt = int(arg)
                 if modules_cnt < 1 or modules_cnt > 10:
@@ -124,6 +128,24 @@ def main(argv):
     val_epochs = 50                  # Number of epochs for validation
     val_split = 0.2                  # Validation split of training data
     verbose = 2                      # Verbose
+=======
+            modules_cnt = int(arg)
+
+    pop_size = population
+    generations = generations
+    tournament_count = 0  # If == 0, Roulette is used
+    mutation_probability = mutation
+    phases = phases_cnt
+    modules = modules_cnt
+    genes_cros = True  # Genes crossover
+    dataset = 3  # 0 - MNIST, 1 - FASHION MNIST, 2 - SVHN, 3 - CIFAR10, 4 - CIFAR100
+    batch_size = 128
+    epochs = 10
+    val_batch_size = 64
+    val_epochs = 50
+    val_split = 0.2
+    verbose = 2
+>>>>>>> 6a8aab38c51e9e96d6390615ff19334f33770de7
 
     # Types of information for export
     result_export = ResultExport(

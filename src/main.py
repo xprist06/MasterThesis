@@ -117,7 +117,7 @@ def main(argv):
     phases = phases_cnt              # Number of phases in genotype
     modules = modules_cnt            # Number of modules in genotype
     genes_cros = True                # Genes crossover; if False, Modules crossover is used
-    dataset = 2                      # 0 - MNIST, 1 - FASHION MNIST, 2 - SVHN, 3 - CIFAR10, 4 - CIFAR100
+    dataset = 3                      # 0 - MNIST, 1 - FASHION MNIST, 2 - SVHN, 3 - CIFAR10, 4 - CIFAR100
     batch_size = 128                 # Batch size for evolution
     epochs = 10                      # Number of epochs for evolution
     val_batch_size = 64              # Batch size for validation

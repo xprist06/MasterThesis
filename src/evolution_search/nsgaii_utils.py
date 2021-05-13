@@ -1,3 +1,16 @@
+# -----------------------------------------------------------------------------
+# This software was developed as practical part of Master's thesis at FIT BUT
+# The program uses multiobjective NSGA-II algorithm for designing accurate
+# and compact CNNs.
+#
+# Author: Jan Pristas, xprist06@stud.fit.vutbr.cz
+# Institute: Faculty of Information Technology, Brno University of Technology
+#
+# File: nsgaii_utils.py
+# Description: Contains utility methods for evolution
+# -----------------------------------------------------------------------------
+
+
 from evolution_search.individual import Individual
 from model_engine.model_utils import ModelUtils
 import numpy as np
@@ -26,6 +39,12 @@ class NSGAIIUtils:
     ####################################################################################################################
 
     def fast_nondominated_sort(self, population):
+        """
+        Sort population into Pareto fronts
+        Method was taken over from Github repository
+        - https://github.com/baopng/NSGA-II/blob/master/nsga2/utils.py
+        :param population: Population
+        """
         population.pareto_fronts = [[]]
         for individual in population:
             individual.domination_count = 0
@@ -52,6 +71,12 @@ class NSGAIIUtils:
             population.pareto_fronts.append(tmp_pareto_front)
 
     def compute_crowding_distance(self, pareto_front):
+        """
+        Compute crowding distance of individuals in Pareto front
+        Method was taken over from Github repository
+        - https://github.com/baopng/NSGA-II/blob/master/nsga2/utils.py
+        :param pareto_front: Pareto front
+        """
         if len(pareto_front) > 0:
             individuals_count = len(pareto_front)
             for individual in pareto_front:
@@ -79,6 +104,12 @@ class NSGAIIUtils:
                     i - 1].param_count) / scale
 
     def tournament(self, population, tournament_count):
+        """
+        Tournament selection
+        :param population: Population
+        :param tournament_count: Number of individuals randomly selected into tournament
+        :return: New parents
+        """
         parents = []
         for i in range(2):
             tmp_idls = random.sample(population.individuals, tournament_count)
@@ -90,6 +121,11 @@ class NSGAIIUtils:
         return parents
 
     def roulette(self, population):
+        """
+        Roulette selection
+        :param population: Population
+        :return: New parents
+        """
         weights = []
         roulette_wheel = []
         for individual in population:
@@ -101,6 +137,11 @@ class NSGAIIUtils:
         return parents
 
     def connections_crossover(self, parents):
+        """
+        Create new individuals using connections (genes) crossover
+        :param parents: Parents
+        :return: New offsprings
+        """
         offsprings = []
         offsprings_genotype_arr = []
         parent_genotype_arr = []
@@ -121,6 +162,11 @@ class NSGAIIUtils:
         return offsprings
 
     def genotype_to_arr(self, genotype):
+        """
+        Convert genotype into 1d array
+        :param genotype: Genotype
+        :return: 1d array representation of genotype
+        """
         genotype_arr = []
         self.expand_genotype(genotype)
         for i in range(NSGAIIUtils.phase_count):
@@ -131,6 +177,11 @@ class NSGAIIUtils:
         return genotype_arr
 
     def arr_to_genotype(self, genotype_arr):
+        """
+        Convert 1d array into genotype
+        :param genotype_arr: 1d array
+        :return: Genotype
+        """
         genotype = []
         for i in range(NSGAIIUtils.phase_count):
             genotype.append([])
@@ -148,6 +199,11 @@ class NSGAIIUtils:
         return genotype
 
     def modules_crossover(self, parents):
+        """
+        Create new individuals using modules crossover
+        :param parents: Parents
+        :return: New offsprings
+        """
         offsprings = []
         for i in range(2):
             offsprings.append([])
@@ -167,6 +223,11 @@ class NSGAIIUtils:
         return offsprings
 
     def mutation(self, genotype):
+        """
+        Mutate individual's genotype
+        :param genotype: genotype
+        :return: Mutated genotype
+        """
         phase = random.randint(0, NSGAIIUtils.phase_count - 1)
         module = random.randint(0, NSGAIIUtils.modules_count + 1)
         while module == NSGAIIUtils.phase_output_idx:
@@ -189,6 +250,10 @@ class NSGAIIUtils:
         self.validate_genotype(genotype)
 
     def generate_individual(self):
+        """
+        Generate new individual
+        :return: New individual
+        """
         genotype = []
         for i in range(NSGAIIUtils.phase_count):
             genotype.append([])
@@ -205,12 +270,20 @@ class NSGAIIUtils:
         return individual
 
     def minify_genotype(self, genotype):
+        """
+        Minify genotype
+        :param genotype: Genotype
+        """
         for i in range(NSGAIIUtils.phase_count):
             for j in range(NSGAIIUtils.modules_count):
                 if genotype[i][j][0] == 0 and len(genotype[i][j]) > 1:
                     genotype[i][j] = np.array([0])
 
     def expand_genotype(self, genotype):
+        """
+        Expand genotype
+        :param genotype: Genotype
+        """
         for i in range(NSGAIIUtils.phase_count):
             for j in range(NSGAIIUtils.modules_count):
                 if j != 0:
@@ -218,6 +291,10 @@ class NSGAIIUtils:
                         genotype[i][j] = np.zeros(j + 1, dtype=int)
 
     def validate_genotype(self, genotype):
+        """
+        Validate genotype - fix invalid connections
+        :param genotype: Genotype
+        """
         for i in range(NSGAIIUtils.phase_count):
             for j in range(NSGAIIUtils.modules_count):
                 if genotype[i][j][0] == 1:
@@ -242,6 +319,10 @@ class NSGAIIUtils:
     ####################################################################################################################
 
     def log_best_pf(self, best_pf):
+        """
+        Log best Pareto front informations
+        :param best_pf: Best Pareto front
+        """
         i = 0
         with open(self.directory + "/output.log", "a") as f:
             f.write("BEST PARETO FRONT:\n")
@@ -251,6 +332,10 @@ class NSGAIIUtils:
             f.write("\n-------------------------------------------------------------------\n\n")
 
     def log_population(self, population):
+        """
+        Log population informations
+        :param population: Population
+        """
         i = 0
         with open(self.directory + "/output.log", "a") as f:
             f.write("POPULATION:\n")
@@ -270,12 +355,19 @@ class NSGAIIUtils:
     ####################################################################################################################
 
     def mk_pareto_dir(self):
+        """
+        Make tmp_pareto directory
+        If already exists, remove and create empty one
+        """
         if os.path.isdir(NSGAIIUtils.directory + "/tmp_pareto"):
             self.rm_pareto_dir()
         directory = NSGAIIUtils.directory + "/tmp_pareto"
         os.mkdir(directory)
 
     def rm_pareto_dir(self):
+        """
+        Remove tmp_pareto directory
+        """
         directory = NSGAIIUtils.directory + "/tmp_pareto"
         if len(os.listdir(directory)) == 0:
             os.rmdir(directory)
@@ -286,15 +378,25 @@ class NSGAIIUtils:
             os.rmdir(directory)
 
     def print_best_pf(self, best_pf):
+        """
+        Create info string about best pareto front for output log
+        :param best_pf: Best Pareto front
+        :return: String with info about best Pareto front
+        """
         i = 0
         output = ""
         for individual in best_pf:
-            # print(str(i) + ": error: " + str(individual.error) + "\tparam_count: " + str(individual.param_count))
             output += str(i) + ": error: " + str(individual.error) + "\tparam_count: " + str(individual.param_count) + "\n"
             i += 1
         return output
 
     def make_pf_graph(self, population, best_pf, idx=None):
+        """
+        Make population graph with highlighted best Pareto front
+        :param population: Population
+        :param best_pf: Best Pareto front
+        :param idx: Index of generation, None after computation for last Pareto front graph
+        """
         scores = np.empty((0, 2), float)
         pareto_scores = np.empty((0, 2), float)
 
@@ -337,6 +439,9 @@ class NSGAIIUtils:
         plt.clf()
 
     def make_pf_gif(self):
+        """
+        Make Pareto front evolution gif from graphs in tmp_pareto directory
+        """
         images = []
         path = NSGAIIUtils.directory + "/tmp_pareto"
         files = sorted(os.listdir(path), key=lambda x: os.path.getctime(os.path.join(path, x)))
@@ -347,6 +452,13 @@ class NSGAIIUtils:
         self.rm_pareto_dir()
 
     def save_best_pf(self, population, best_pf, result_export=None, idx=None):
+        """
+        Save informations about best Pareto front
+        :param population: Population
+        :param best_pf: Best Pareto front
+        :param result_export: Result export info
+        :param idx: Index of generation
+        """
         if result_export is not None:
             if result_export.pareto_graph:
                 self.make_pf_graph(population, best_pf, idx)
@@ -384,6 +496,13 @@ class NSGAIIUtils:
     ####################################################################################################################
 
     def make_graph(self, individual):
+        """
+        Make genotype graph using Digraph
+        Implementation of method was inspired in project from Github repository
+        - https://github.com/ianwhale/nsga-net/blob/master/visualization/macro_visualize.py
+        :param individual: Individual
+        :return: Individual's genotype graph
+        """
         conv_color = "orangered"
         node_color = "lightblue"
         input_color = "white"
@@ -440,6 +559,11 @@ class NSGAIIUtils:
         return graph
 
     def make_graph_structure(self, individual):
+        """
+        Make graph structure from genotype
+        :param individual: Individual
+        :return: Graph structure
+        """
         nodes = []
         pool_nodes = []
         dropout_nodes = []
@@ -538,6 +662,13 @@ class NSGAIIUtils:
         return graph_structure
 
     def write_ind_to_file(self, individual, directory, result_export, res=False):
+        """
+        Write individual's informations into files
+        :param individual: Individual
+        :param directory: Individual's directory
+        :param result_export: Result export info
+        :param res: Flag if is computation over, if True, individual is one of result
+        """
         if res:
             if result_export.export_keras():
                 try:
@@ -545,7 +676,6 @@ class NSGAIIUtils:
                     if result_export.keras_graph:
                         keras.utils.plot_model(model, to_file=directory + "/cnn_structure.png", show_shapes=True)
                     if result_export.keras_model:
-                        # model.save(directory + "/keras_model")
                         model_json = model.to_json()
                         with open(directory + "/model.json", "w") as f:
                             f.write(model_json)

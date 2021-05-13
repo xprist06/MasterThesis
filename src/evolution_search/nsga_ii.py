@@ -1,3 +1,18 @@
+# -----------------------------------------------------------------------------
+# This software was developed as practical part of Master's thesis at FIT BUT
+# The program uses multiobjective NSGA-II algorithm for designing accurate
+# and compact CNNs.
+#
+# Author: Jan Pristas, xprist06@stud.fit.vutbr.cz
+# Institute: Faculty of Information Technology, Brno University of Technology
+#
+# File: nsga_ii.py
+# Description: Contains NSGAII class, which controls evolution
+# Structure of NSGA-II algorithm was inspired in project from Github repository
+# - https://github.com/baopng/NSGA-II/tree/master/nsga2
+# -----------------------------------------------------------------------------
+
+
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 import tensorflow as tf
@@ -81,6 +96,7 @@ class NSGAII:
         NSGAIIUtils.phase_output_idx = self.modules_count
         NSGAIIUtils.phase_skip_idx = self.modules_count + 1
 
+        # Create directory for result
         dir_uid = uuid.uuid4()
         self.directory = "./res/" + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + "_" + str(dir_uid)
         os.makedirs(self.directory)
@@ -106,6 +122,7 @@ class NSGAII:
         ModelUtils.phase_output_idx = self.modules_count
         ModelUtils.phase_skip_idx = self.modules_count + 1
 
+        # Config for TensorFlow session
         config = tf.compat.v1.ConfigProto()
         config.allow_soft_placement = True
         config.log_device_placement = True
@@ -119,6 +136,7 @@ class NSGAII:
         # Evolution
         self.evolution()
 
+        # Computation time
         end = time.time()
         hours, rem = divmod(end - start, 3600)
         minutes, seconds = divmod(rem, 60)
@@ -132,10 +150,17 @@ class NSGAII:
         self.save_result()
 
     def evolution(self):
+        """
+        Method controls single steps of evolution
+        """
         logging.info("Starting evolution...")
         self.write_log_prefix()
+
+        # If Pareto graphs should be exported, create tmp_pareto_dir for graphs
+        # Graphs will be used for creating gif
         if self.result_export.pareto_graph:
             self.utils.mk_pareto_dir()
+
         self.exploration()
         self.exploitation()
         self.train_best_pf()
@@ -153,6 +178,9 @@ class NSGAII:
         self.utils.log_best_pf(self.best_pf)
 
     def exploration(self):
+        """
+        Exploration phase of evolution
+        """
         logging.info("Starting exploration phase...")
         self.initialize_population()
         self.evaluate_population(self.population)
@@ -183,13 +211,19 @@ class NSGAII:
         print()
 
     def exploitation(self):
+        """
+        Exploitation phase of evolution
+        """
         logging.info("Starting exploitation phase...")
+
+        # Set number of generations for evaluation phase
         if self.max_gen > 2:
             exp_gen = self.max_gen // 2
             if self.max_gen % 2 == 1:
                 exp_gen += 1
         else:
             exp_gen = 2
+
         for i in range(exp_gen):
             offsprings = self.create_exploitation_offsprings()
             self.evaluate_population(offsprings)
@@ -213,6 +247,10 @@ class NSGAII:
         print()
 
     def evaluate_population(self, population):
+        """
+        Train and evaluate individuals in population
+        :param population: Population of individuals
+        """
         for individual in population:
             manager = mp.Manager()
             queue = manager.Queue()
@@ -226,6 +264,10 @@ class NSGAII:
             individual.training_time = tr_time
 
     def train_best_pf(self):
+        """
+        Train and evaluate individuals from best Pareto front after exploitation phase
+        """
+
         ModelUtils.batch_size = self.val_batch_size
         ModelUtils.epochs = self.val_epochs
 
@@ -243,20 +285,30 @@ class NSGAII:
             individual.training_time = tr_time
 
     def set_best_pf(self):
+        """
+        Set best Pareto front
+        """
         self.utils.fast_nondominated_sort(self.population)
         for pareto_front in self.population.pareto_fronts:
             self.utils.compute_crowding_distance(pareto_front)
         self.population.compute_fitness()
+
         if len(self.population.pareto_fronts[0]) > self.pop_size:
             self.population.pareto_fronts[0].sort(key=lambda individual: individual.crowding_distance, reverse=True)
             self.best_pf = self.population.pareto_fronts[0][0:self.pop_size].copy()
         else:
             self.best_pf = self.population.pareto_fronts[0].copy()
+
         self.best_pf.sort(key=lambda individual: individual.error, reverse=False)
 
     def initialize_population(self):
+        """
+        Create first population
+        """
         while len(self.population) < self.pop_size:
             new_individual = self.utils.generate_individual()
+
+            # Individuals has to be distinct
             if self.population.contains(new_individual):
                 continue
             self.population.append(new_individual)
@@ -265,6 +317,10 @@ class NSGAII:
             self.genotypes.append(individual.genotype_to_str())
 
     def create_new_population(self):
+        """
+        Create new population (new generation)
+        :return: New population of individuals
+        """
         new_population = Population()
         last_pf = None
         for pareto_front in self.population.pareto_fronts:
@@ -279,22 +335,33 @@ class NSGAII:
         return new_population
 
     def create_offspring_population(self):
+        """
+        Create population of offsprings
+        :return: Offsprings population
+        """
         offsprings = Population()
         while len(offsprings) < self.pop_size:
+            # Selection
             parents = self.selection()
+            # Crossover
             if self.genes_cros:
                 genotypes = self.utils.connections_crossover(parents)
             else:
                 genotypes = self.utils.modules_crossover(parents)
+
             new_offsprings = []
             unique_offs = True
+
             for genotype in genotypes:
+                # Random mutation
                 if random.random() <= self.mutation_probability:
                     self.utils.mutation(genotype)
                 else:
                     self.utils.minify_genotype(genotype)
                     self.utils.validate_genotype(genotype)
+
                 new_individual = Individual(genotype)
+                # Check if individual already existed in any of previous generations
                 if self.genotype_exists(new_individual.genotype_to_str()):
                     unique_offs = False
                     break
@@ -308,13 +375,19 @@ class NSGAII:
         return offsprings
 
     def create_exploitation_offsprings(self):
+        """
+        Create population of offsprings in exploitation phase
+        :return: Offsprings population
+        """
         offsprings = Population()
         while len(offsprings) < self.pop_size:
+            # Select only one parent
             if self.roulette:
                 parent = self.utils.roulette(self.population)[0]
             else:
                 parent = self.utils.tournament(self.population, self.tournament_count)[0]
             genotype = deepcopy(parent.genotype)
+            # Create new individual via mutation
             self.utils.mutation(genotype)
             new_individual = Individual(genotype)
             if self.genotype_exists(new_individual.genotype_to_str()):
@@ -324,6 +397,10 @@ class NSGAII:
         return offsprings
 
     def selection(self):
+        """
+        Select parents
+        :return: Parents for crossover
+        """
         if self.roulette:
             parents = self.utils.roulette(self.population)
         else:
@@ -331,12 +408,20 @@ class NSGAII:
         return parents
 
     def genotype_exists(self, new_genotype):
+        """
+        Check if genotype already existed in any of previous generations
+        :param new_genotype: Genotype to be checked
+        :return: Boolean value of genotype occurrence
+        """
         for genotype in self.genotypes:
             if new_genotype == genotype:
                 return True
         return False
 
     def write_log_prefix(self):
+        """
+        Write prefix into output log
+        """
         with open(self.directory + "/output.log", "a") as f:
             f.write("-------------------------------------------------------------------\n")
             f.write("                          STARTUP SETTINGS                         \n")
@@ -437,6 +522,9 @@ class NSGAII:
             f.write("\n")
 
     def save_result(self):
+        """
+        Save result of evolution
+        """
         logging.info("Saving result...")
         if self.result_export.export():
             self.utils.save_best_pf(

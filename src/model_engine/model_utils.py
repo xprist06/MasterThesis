@@ -1,3 +1,16 @@
+# -----------------------------------------------------------------------------
+# This software was developed as practical part of Master's thesis at FIT BUT
+# The program uses multiobjective NSGA-II algorithm for designing accurate
+# and compact CNNs.
+#
+# Author: Jan Pristas, xprist06@stud.fit.vutbr.cz
+# Institute: Faculty of Information Technology, Brno University of Technology
+#
+# File: model_utils.py
+# Description: Utility methods for CNN model - create model and evaluate
+# -----------------------------------------------------------------------------
+
+
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 from tensorflow.keras.models import Model
@@ -35,6 +48,11 @@ class ModelUtils:
 
     @staticmethod
     def create_model(individual):
+        """
+        Create model from individual genotype
+        :param individual: Individual
+        :return: CNN model
+        """
         x = modules.conv_module(ModelUtils.input, 32, (3, 3))
         for i in range(ModelUtils.phase_count):
             x = individual.phases[i].create_phase_model(x)
@@ -49,6 +67,12 @@ class ModelUtils:
 
     @staticmethod
     def evaluate(queue, individual, validation=False):
+        """
+        Train and evaluate CNN model
+        :param queue: Queue for return values after process is finished
+        :param individual: Individual
+        :param validation: If validation is True, whole dataset is used for training, default value is False
+        """
         import tensorflow as tf
         import tensorflow.keras as keras
         import logging
@@ -104,6 +128,7 @@ class ModelUtils:
 
             score = model.evaluate(ModelUtils.test_x, ModelUtils.test_y, verbose=0)
 
+            # Compute evolution parameters for individual
             individual.accuracy = score[1] * 100
             individual.error = (1 - score[1]) * 100
             individual.param_count = np.sum([keras.backend.count_params(w) for w in model.trainable_weights])
@@ -113,7 +138,7 @@ class ModelUtils:
             keras.backend.clear_session()
             sess.close()
 
-        except tf.errors.ResourceExhaustedError as e:
+        except tf.errors.ResourceExhaustedError:
             individual.accuracy = 0
             individual.error = 100
             individual.param_count = math.inf

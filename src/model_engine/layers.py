@@ -1,3 +1,16 @@
+# -----------------------------------------------------------------------------
+# This software was developed as practical part of Master's thesis at FIT BUT
+# The program uses multiobjective NSGA-II algorithm for designing accurate
+# and compact CNNs.
+#
+# Author: Jan Pristas, xprist06@stud.fit.vutbr.cz
+# Institute: Faculty of Information Technology, Brno University of Technology
+#
+# File: layers.py
+# Description: Layers/Modules definition for CNN
+# -----------------------------------------------------------------------------
+
+
 phase_layers = [
     {
         "id": 1,

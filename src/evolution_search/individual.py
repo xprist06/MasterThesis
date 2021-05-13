@@ -1,6 +1,18 @@
+# -----------------------------------------------------------------------------
+# This software was developed as practical part of Master's thesis at FIT BUT
+# The program uses multiobjective NSGA-II algorithm for designing accurate
+# and compact CNNs.
+#
+# Author: Jan Pristas, xprist06@stud.fit.vutbr.cz
+# Institute: Faculty of Information Technology, Brno University of Technology
+#
+# File: individual.py
+# Description: Contains Individual class
+# -----------------------------------------------------------------------------
+
+
 from model_engine.phase import Phase
 import math
-import random
 
 
 class Individual:
@@ -14,8 +26,6 @@ class Individual:
         self.accuracy = None
         self.error = None
         self.param_count = None
-        # self.error = random.uniform(1, 10)
-        # self.param_count = random.randint(150000, 1000000)
         self.genotype = genotype
         self.domination_count = 0
         self.dominated_individuals = []
@@ -51,18 +61,30 @@ class Individual:
                        and (self.crowding_distance > other.crowding_distance))
 
     def dominates(self, other):
+        """
+        Check if individual dominates other
+        :param other: Other individual
+        :return: True if individual dominates other, False otherwise
+        """
         if isinstance(other, Individual):
             return (self.error <= other.error and self.param_count <= other.param_count) \
                    and (self.error < other.error or self.param_count < other.param_count)
 
     def compute_fitness(self):
-        if self.crowding_distance == math.inf:
+        """
+        Compute crowding distance of individual
+        """
+        if self.crowding_distance == math.inf or self.crowding_distance == 0:
             tmp_val = self.rank + 1
         else:
             tmp_val = self.rank + (1/self.crowding_distance) + 1
         self.fitness = 1/tmp_val
 
     def genotype_to_str(self):
+        """
+        Convert individual's genotype from array to string
+        :return: String representation of individual's genotype
+        """
         str_genotype = ""
         for phase in self.phases:
             for i in range(len(phase.phase_connections)):

@@ -1,3 +1,16 @@
+# -----------------------------------------------------------------------------
+# This software was developed as practical part of Master's thesis at FIT BUT
+# The program uses multiobjective NSGA-II algorithm for designing accurate
+# and compact CNNs.
+#
+# Author: Jan Pristas, xprist06@stud.fit.vutbr.cz
+# Institute: Faculty of Information Technology, Brno University of Technology
+#
+# File: dataset.py
+# Description: Load dataset for image classification
+# -----------------------------------------------------------------------------
+
+
 from tensorflow.keras.datasets import mnist
 from tensorflow.keras.datasets import fashion_mnist
 from tensorflow.keras.datasets import cifar10
@@ -39,8 +52,11 @@ class Dataset:
         self.load_evo_subset()
 
     def load_mnist(self):
-        # Load the MNIST dataset
+        """
+        Load the MNIST dataset
+        """
         logging.info("loading MNIST dataset...")
+
         # Load the data
         (self.train_x, self.train_y), (self.test_x, self.test_y) = mnist.load_data()
 
@@ -58,8 +74,11 @@ class Dataset:
         self.classes_cnt = 10
 
     def load_fashion_mnist(self):
-        # Load the FASHION MNIST dataset
+        """
+        Load the FASHION MNIST dataset
+        """
         logging.info("loading FASHION MNIST dataset...")
+
         # Load the data
         (self.train_x, self.train_y), (self.test_x, self.test_y) = fashion_mnist.load_data()
 
@@ -80,13 +99,14 @@ class Dataset:
         self.classes_cnt = len(label_names)
 
     def load_svhn(self):
-        # Load SVHN dataset
+        """
+        Load SVHN dataset
+        """
         logging.info("loading SVHN dataset...")
+
         # Load the data
-        # train_raw = loadmat('C:\\Users\\janp\\Documents\\Skola\\DP\\Python\\src\\input\\svhn\\train.mat')
-        # test_raw = loadmat('C:\\Users\\janp\\Documents\\Skola\\DP\\Python\\src\\input\\svhn\\test.mat')
-        train_raw = loadmat('/home/xprist06/src/input/svhn/train.mat')
-        test_raw = loadmat('/home/xprist06/src/input/svhn/test.mat')
+        train_raw = loadmat("./input/svhn/train.mat")
+        test_raw = loadmat("./input/svhn/test.mat")
 
         # Load images and labels
         self.train_x = np.array(train_raw['X'])
@@ -116,8 +136,11 @@ class Dataset:
         self.classes_cnt = 10
 
     def load_cifar10(self):
-        # Load the CIFAR-10 dataset
+        """
+        Load the CIFAR-10 dataset
+        """
         logging.info("loading CIFAR-10 dataset...")
+
         # Load the data
         (self.train_x, self.train_y), (self.test_x, self.test_y) = cifar10.load_data()
 
@@ -134,8 +157,11 @@ class Dataset:
         self.classes_cnt = len(self.label_names)
 
     def load_cifar100(self):
-        # Load the CIFAR-100 dataset
+        """
+        Load the CIFAR-100 dataset
+        """
         logging.info("loading CIFAR-100 dataset...")
+
         # Load the data
         (self.train_x, self.train_y), (self.test_x, self.test_y) = cifar100.load_data()
 
@@ -149,6 +175,9 @@ class Dataset:
         self.classes_cnt = 100
 
     def load_evo_subset(self):
+        """
+        Load subset of dataset for evolution training
+        """
         train_x, test_x, train_y, test_y = train_test_split(self.train_x, self.train_y, train_size=0.25)
         self.evo_train_x = train_x
         self.evo_train_y = train_y

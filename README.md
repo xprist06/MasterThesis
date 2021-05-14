@@ -31,7 +31,7 @@ main.py [options]
 Options:
   -h --help   Show help message.
   -p --pop    Number of individuals in each generation (integer > 1) [default: 15].
-  -g --gen    Number of generations (integer > 0) [default: 15]
+  -g --gen    Number of generations (integer > 0) [default: 15].
   -m --mut    Mutation probability (float 0-1) [default: 0.15].
   --phases    Number of phases in genotypes (integer > 1) [default: 2].
   --modules   Number of modules in genotypes (integer 1-10) [default: 6].

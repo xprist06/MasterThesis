@@ -7,7 +7,7 @@
 # Institute: Faculty of Information Technology, Brno University of Technology
 #
 # File: phase.py
-# Description: Create CNN for phase from individual genotype
+# Description: Create CNN for phase from individual's genotype
 # -----------------------------------------------------------------------------
 
 
